@@ -1,0 +1,26 @@
+user u "User"
+participant a "Alice"
+participant b "Bob"
+
+a -> b: "hahah"
+b -> b: "do something"
+b --> a: "akakaka"
+
+on a, b {
+
+  loop "v in x" {
+  }
+
+}
+
+on a, b {
+
+  if "v == 2" {
+    a -> b: "hi"
+  } elseif "v == 3" {
+    a -> b: "hello"
+  } else {
+    a -> b: "bye"
+  }
+
+}
