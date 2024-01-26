@@ -1,0 +1,2 @@
+# dgo
+Diagram generator
