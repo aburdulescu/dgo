@@ -1,28 +1,28 @@
 // define an user
 // syntax: user identifier "text"
-user u "User"
+user u "User";
 
 // define some participants
 // syntax: participant identifier "text"
-participant a "Alice"
-participant b "Bob"
+participant a "Alice";
+participant b "Bob";
 
 // message
 // syntax: message src dst "text"
-message u a "start"
-message a b "hahah"
-message b b "do something"
+message u a "start";
+message a b "hahah";
+message b b "do something";
 
 // reply
 // syntax: reply src dst "text"
-reply b a: "akakaka"
+reply b a "akakaka";
 
 // loop
 // syntax:
 //   loop "text"
 //   end
-loop "for x in y"
-end
+loop "for x in y" {
+}
 
 // alt
 // syntax:
@@ -31,7 +31,7 @@ end
 //   else
 //   end
 // elseif and else are optional
-if "x == 42"
-elseif "x == 23"
-else
-end
+if "x == 42" {
+} elseif "x == 23" {
+} else {
+}

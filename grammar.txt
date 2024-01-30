@@ -1,0 +1,10 @@
+Program = { Block }
+
+Block = UserDecl | ParticipantDecl | MessageStmt | ReplyStmt | LoopStmt | IfStmt
+
+UserDecl = "user" identifier string ";"
+ParticipantDecl = "participant" identifier string ";"
+MessageStmt = "message" identifier identifier string ";"
+ReplyStmt = "reply" identifier identifier string ";"
+LoopStmt = "loop" string "{" block "}"
+IfStmt = "if" string "{" block "}" { "elseif" string "{" block "}" } [else "{" block "}"]
