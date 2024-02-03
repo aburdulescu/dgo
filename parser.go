@@ -18,18 +18,25 @@ type edge struct {
 	label    string
 }
 
-type parser struct {
-	tokens []token
-	i      int
-	last   token
-	nodes  []node
-	edges  []edge
-	err    error
+type graph struct {
+	nodes []node
+	edges []edge
 }
 
-func parse(r io.Reader) error {
-	p := parser{tokens: scan(r)}
-	return p.parse()
+type parser struct {
+	t    []token
+	i    int
+	last token
+	err  error
+	g    graph
+}
+
+func parse(r io.Reader) (*graph, error) {
+	p := parser{t: scan(r)}
+	if err := p.parse(); err != nil {
+		return nil, err
+	}
+	return &p.g, nil
 }
 
 func (p *parser) parse() error {
@@ -39,8 +46,8 @@ func (p *parser) parse() error {
 		}
 		p.parseBlock()
 	}
-	fmt.Println(p.nodes)
-	fmt.Println(p.edges)
+	fmt.Println(p.g.nodes)
+	fmt.Println(p.g.edges)
 	return nil
 }
 
@@ -70,7 +77,7 @@ func (p *parser) parseBlock() {
 
 		p.expect(isSemicolon)
 
-		p.addNode(n)
+		p.g.addNode(n)
 
 	case p.accept(isMsg):
 		e := edge{dir: false}
@@ -86,7 +93,7 @@ func (p *parser) parseBlock() {
 
 		p.expect(isSemicolon)
 
-		p.addEdge(e)
+		p.g.addEdge(e)
 
 	case p.accept(isRsp):
 		e := edge{dir: true}
@@ -102,19 +109,19 @@ func (p *parser) parseBlock() {
 
 		p.expect(isSemicolon)
 
-		p.addEdge(e)
+		p.g.addEdge(e)
 
 	default:
 		p.error("unexpected keyword")
 	}
 }
 
-func (p *parser) addNode(n node) {
-	p.nodes = append(p.nodes, n)
+func (g *graph) addNode(n node) {
+	g.nodes = append(g.nodes, n)
 }
 
-func (p *parser) addEdge(e edge) {
-	p.edges = append(p.edges, e)
+func (g *graph) addEdge(e edge) {
+	g.edges = append(g.edges, e)
 }
 
 func (p *parser) next() {
@@ -123,7 +130,7 @@ func (p *parser) next() {
 }
 
 func (p parser) token() token {
-	return p.tokens[p.i]
+	return p.t[p.i]
 }
 
 func (p *parser) accept(filter func(string) bool) bool {

@@ -11,8 +11,9 @@ func TestParse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = parse(strings.NewReader(string(content)))
+	g, err := parse(strings.NewReader(string(content)))
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Log(g)
 }
