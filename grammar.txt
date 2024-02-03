@@ -1,4 +1,4 @@
-Program = { Block }
+Diagram = { Block }
 
 Block = Definition | Message | Response
 
