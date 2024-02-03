@@ -11,3 +11,7 @@ msg b b "Who is User!";
 // send response
 rsp b a "Bob is done";
 rsp b a "Alice is done";
+
+// raw string
+rsp b a `line1
+line2`;

@@ -44,12 +44,18 @@ func (p *parser) parse() error {
 	return nil
 }
 
-func isDef(tok string) bool        { return tok == "def" }
-func isMsg(tok string) bool        { return tok == "msg" }
-func isRsp(tok string) bool        { return tok == "rsp" }
-func isSemicolon(tok string) bool  { return tok == ";" }
-func isString(tok string) bool     { return tok[0] == '"' && tok[len(tok)-1] == '"' }
-func isIdentifier(tok string) bool { return gotoken.IsIdentifier(tok) }
+func isDef(tok string) bool          { return tok == "def" }
+func isMsg(tok string) bool          { return tok == "msg" }
+func isRsp(tok string) bool          { return tok == "rsp" }
+func isSemicolon(tok string) bool    { return tok == ";" }
+func isRawString(tok string) bool    { return tok[0] == '`' && tok[len(tok)-1] == '`' }
+func isSimpleString(tok string) bool { return tok[0] == '"' && tok[len(tok)-1] == '"' }
+func isString(tok string) bool       { return isRawString(tok) || isSimpleString(tok) }
+func isIdentifier(tok string) bool   { return gotoken.IsIdentifier(tok) }
+
+func stripString(s string) string {
+	return s[1 : len(s)-1]
+}
 
 func (p *parser) parseBlock() {
 	switch {
@@ -60,7 +66,7 @@ func (p *parser) parseBlock() {
 		n.identifier = p.last.text
 
 		p.expect(isString)
-		n.label = p.last.text
+		n.label = stripString(p.last.text)
 
 		p.expect(isSemicolon)
 
@@ -76,7 +82,7 @@ func (p *parser) parseBlock() {
 		e.dst = p.last.text
 
 		p.expect(isString)
-		e.label = p.last.text
+		e.label = stripString(p.last.text)
 
 		p.expect(isSemicolon)
 
@@ -92,7 +98,7 @@ func (p *parser) parseBlock() {
 		e.dst = p.last.text
 
 		p.expect(isString)
-		e.label = p.last.text
+		e.label = stripString(p.last.text)
 
 		p.expect(isSemicolon)
 

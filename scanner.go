@@ -6,8 +6,10 @@ import (
 	"text/scanner"
 )
 
-const scannerMode = scanner.ScanIdents |
+const scannerMode = 0 |
+	scanner.ScanIdents |
 	scanner.ScanStrings |
+	scanner.ScanRawStrings |
 	scanner.ScanComments |
 	scanner.SkipComments
 
