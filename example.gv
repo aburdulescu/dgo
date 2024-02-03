@@ -1,0 +1,13 @@
+digraph graphname {
+    u_start [shape=box, label="User"];
+    u_end [shape=box, label="User"];
+    u_start -> u_end [arrowhead=none];
+
+    a_start [shape=box, label="Alice"];
+    a_end [shape=box, label="Alice"];
+    a_start -> a_end [arrowhead=none];
+
+    b_start [shape=box, label="Bob"];
+    b_end [shape=box, label="Bob"];
+    b_start -> b_end [arrowhead=none];
+}

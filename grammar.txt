@@ -1,10 +1,7 @@
 Program = { Block }
 
-Block = UserDecl | ParticipantDecl | MessageStmt | ReplyStmt | LoopStmt | IfStmt
+Block = Object | Msg | Reply
 
-UserDecl = "user" identifier string ";"
-ParticipantDecl = "participant" identifier string ";"
-MessageStmt = "message" identifier identifier string ";"
-ReplyStmt = "reply" identifier identifier string ";"
-LoopStmt = "loop" string "{" block "}"
-IfStmt = "if" string "{" block "}" { "elseif" string "{" block "}" } [else "{" block "}"]
+Object = "def" identifier string ";"
+Msg = "msg" identifier identifier string ";"
+Reply = "reply" identifier identifier string ";"
