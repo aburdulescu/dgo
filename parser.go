@@ -12,15 +12,15 @@ type parser struct {
 	i    int
 	last token
 	err  error
-	g    graph
+	d    Diagram
 }
 
-func Parse(r io.Reader) (*graph, error) {
+func Parse(r io.Reader) (*Diagram, error) {
 	p := parser{t: scan(r)}
 	if err := p.parse(); err != nil {
 		return nil, err
 	}
-	return &p.g, nil
+	return &p.d, nil
 }
 
 func (p *parser) parse() error {
@@ -59,39 +59,55 @@ func (p *parser) parseBlock() {
 
 		p.expect(isSemicolon)
 
-		p.g.addNode(n)
+		p.d.addNode(n)
 
 	case p.accept(isMsg):
-		e := edge{dir: false}
+		e := edge{}
 
 		p.expect(isIdentifier)
-		e.src = p.last.text
+		e.src = p.d.find(p.last.text)
+		if e.src == -1 {
+			p.error(fmt.Sprintf("unknown identifier '%s'", p.last.text))
+			return
+		}
 
 		p.expect(isIdentifier)
-		e.dst = p.last.text
+		e.dst = p.d.find(p.last.text)
+		if e.dst == -1 {
+			p.error(fmt.Sprintf("unknown identifier '%s'", p.last.text))
+			return
+		}
 
 		p.expect(isString)
 		e.label = stripString(p.last.text)
 
 		p.expect(isSemicolon)
 
-		p.g.addEdge(e)
+		p.d.addMsg(e)
 
 	case p.accept(isRsp):
-		e := edge{dir: true}
+		e := edge{}
 
 		p.expect(isIdentifier)
-		e.src = p.last.text
+		e.src = p.d.find(p.last.text)
+		if e.src == -1 {
+			p.error(fmt.Sprintf("unknown identifier '%s'", p.last.text))
+			return
+		}
 
 		p.expect(isIdentifier)
-		e.dst = p.last.text
+		e.dst = p.d.find(p.last.text)
+		if e.dst == -1 {
+			p.error(fmt.Sprintf("unknown identifier '%s'", p.last.text))
+			return
+		}
 
 		p.expect(isString)
 		e.label = stripString(p.last.text)
 
 		p.expect(isSemicolon)
 
-		p.g.addEdge(e)
+		p.d.addRsp(e)
 
 	default:
 		p.error("unexpected keyword")

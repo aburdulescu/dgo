@@ -12,5 +12,5 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(g.Write())
+	fmt.Println(g)
 }

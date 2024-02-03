@@ -16,5 +16,4 @@ func TestParse(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log(g)
-	t.Log(g.Write())
 }
