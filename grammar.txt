@@ -1,7 +1,7 @@
 Program = { Block }
 
-Block = Object | Msg | Reply
+Block = Definition | Message | Response
 
-Object = "def" identifier string ";"
-Msg = "msg" identifier identifier string ";"
-Reply = "reply" identifier identifier string ";"
+Definition = "def" identifier string ";"
+Message = "msg" identifier identifier string ";"
+Response = "rsp" identifier identifier string ";"

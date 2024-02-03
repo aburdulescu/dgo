@@ -1,13 +1,13 @@
-// object
+// define object
 def u "User";
 def a "Alice";
 def b "Bob";
 
-// message
+// send message
 msg u a "Hi!";
 msg a b "User says hi!";
 msg b b "Who is User!";
 
-// reply
-reply b a "Bob is done";
-reply b a "Alice is done";
+// send response
+rsp b a "Bob is done";
+rsp b a "Alice is done";
