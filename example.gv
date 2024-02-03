@@ -1,4 +1,4 @@
-digraph graphname {
+digraph {
     u_start [shape=box, label="User"];
     u_end [shape=box, label="User"];
     u_start -> u_end [arrowhead=none];

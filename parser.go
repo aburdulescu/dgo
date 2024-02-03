@@ -15,7 +15,7 @@ type parser struct {
 	g    graph
 }
 
-func parse(r io.Reader) (*graph, error) {
+func Parse(r io.Reader) (*graph, error) {
 	p := parser{t: scan(r)}
 	if err := p.parse(); err != nil {
 		return nil, err
@@ -30,8 +30,6 @@ func (p *parser) parse() error {
 		}
 		p.parseBlock()
 	}
-	fmt.Println(p.g.nodes)
-	fmt.Println(p.g.edges)
 	return nil
 }
 
