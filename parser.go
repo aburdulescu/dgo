@@ -44,6 +44,9 @@ func isAlt(tok string) bool          { return tok == "alt" }
 func isElse(tok string) bool         { return tok == "else" }
 func isEnd(tok string) bool          { return tok == "end" }
 func isLoop(tok string) bool         { return tok == "loop" }
+func isEqual(tok string) bool        { return tok == "=" }
+func isDash(tok string) bool         { return tok == "-" }
+func isLess(tok string) bool         { return tok == ">" }
 
 func stripString(s string) string {
 	return s[1 : len(s)-1]
@@ -56,6 +59,8 @@ func (p *parser) parseBlock() {
 
 		p.expect(isIdentifier)
 		n.identifier = p.last.text
+
+		p.expect(isEqual)
 
 		p.expect(isString)
 		n.label = stripString(p.last.text)
@@ -72,12 +77,17 @@ func (p *parser) parseBlock() {
 			return
 		}
 
+		p.expect(isDash)
+		p.expect(isLess)
+
 		p.expect(isIdentifier)
 		e.dst = p.d.find(p.last.text)
 		if e.dst == -1 {
 			p.error(fmt.Sprintf("unknown identifier '%s'", p.last.text))
 			return
 		}
+
+		p.expect(isEqual)
 
 		p.expect(isString)
 		e.label = stripString(p.last.text)
@@ -94,12 +104,17 @@ func (p *parser) parseBlock() {
 			return
 		}
 
+		p.expect(isDash)
+		p.expect(isLess)
+
 		p.expect(isIdentifier)
 		e.dst = p.d.find(p.last.text)
 		if e.dst == -1 {
 			p.error(fmt.Sprintf("unknown identifier '%s'", p.last.text))
 			return
 		}
+
+		p.expect(isEqual)
 
 		p.expect(isString)
 		e.label = stripString(p.last.text)
