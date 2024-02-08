@@ -1,17 +1,27 @@
 // define object
-def u "User";
-def a "Alice";
-def b "Bob";
+def u "User"
+def a "Alice"
+def b "Bob"
 
 // send message
-msg u a "Hi!";
-msg a b "User says hi!";
-msg b b "Who is User!";
+msg u a "Hi!"
+msg a b "User says hi!"
+msg b b "Who is User!"
 
 // send response
-rsp b a "Bob is done";
-rsp b a "Alice is done";
+rsp b a "Bob is done"
+rsp b a "Alice is done"
 
 // raw string
 rsp b a `line1
-line2`;
+line2`
+
+alt "text"
+  msg u a "hi"
+else
+  msg u a "bye"
+end
+
+loop "text"
+  msg u a "hi"
+end

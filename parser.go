@@ -36,11 +36,14 @@ func (p *parser) parse() error {
 func isDef(tok string) bool          { return tok == "def" }
 func isMsg(tok string) bool          { return tok == "msg" }
 func isRsp(tok string) bool          { return tok == "rsp" }
-func isSemicolon(tok string) bool    { return tok == ";" }
 func isRawString(tok string) bool    { return tok[0] == '`' && tok[len(tok)-1] == '`' }
 func isSimpleString(tok string) bool { return tok[0] == '"' && tok[len(tok)-1] == '"' }
 func isString(tok string) bool       { return isRawString(tok) || isSimpleString(tok) }
 func isIdentifier(tok string) bool   { return gotoken.IsIdentifier(tok) }
+func isAlt(tok string) bool          { return tok == "alt" }
+func isElse(tok string) bool         { return tok == "else" }
+func isEnd(tok string) bool          { return tok == "end" }
+func isLoop(tok string) bool         { return tok == "loop" }
 
 func stripString(s string) string {
 	return s[1 : len(s)-1]
@@ -56,8 +59,6 @@ func (p *parser) parseBlock() {
 
 		p.expect(isString)
 		n.label = stripString(p.last.text)
-
-		p.expect(isSemicolon)
 
 		p.d.addNode(n)
 
@@ -81,8 +82,6 @@ func (p *parser) parseBlock() {
 		p.expect(isString)
 		e.label = stripString(p.last.text)
 
-		p.expect(isSemicolon)
-
 		p.d.addMsg(e)
 
 	case p.accept(isRsp):
@@ -105,9 +104,21 @@ func (p *parser) parseBlock() {
 		p.expect(isString)
 		e.label = stripString(p.last.text)
 
-		p.expect(isSemicolon)
-
 		p.d.addRsp(e)
+
+	case p.accept(isAlt):
+		p.expect(isString)
+		// TODO: add to diagram
+
+	case p.accept(isElse):
+		// TODO: add to diagram
+
+	case p.accept(isEnd):
+		// TODO: add to diagram
+
+	case p.accept(isLoop):
+		p.expect(isString)
+		// TODO: add to diagram
 
 	default:
 		p.error("unexpected keyword")
