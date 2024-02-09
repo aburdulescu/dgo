@@ -1,20 +1,16 @@
 package dgo
 
 type AST struct {
-	blocks []any
-}
-
-type block struct {
-	nodes []any
+	stmts []any
 }
 
 type loopStmt struct {
-	stmts []node
+	stmts []any
 }
 
 type altStmt struct {
-	stmts     []node
-	stmtsElse []node
+	stmts     []any
+	stmtsElse []any
 }
 
 type defStmt struct {
