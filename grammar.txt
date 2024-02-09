@@ -1,7 +1,9 @@
-Diagram = { Block }
+Diagram = { Stmt }
 
-Block = Definition | Message | Response
+Stmt = DefStmt | MsgStmt | RspStmt | LoopStmt | AltStmt
 
-Definition = "def" identifier string ";"
-Message = "msg" identifier identifier string ";"
-Response = "rsp" identifier identifier string ";"
+DefStmt = "def" identifier string
+MsgStmt = "msg" identifier identifier string
+RspStmt = "rsp" identifier identifier string
+LoopStmt = "loop" string { Stmt } "end"
+AltStmt = "alt" string { Stmt } [ "else" { Stmt } ] "end"
