@@ -28,7 +28,7 @@ func (p *parser) parse() error {
 		if p.err != nil {
 			return p.err
 		}
-		p.parseBlock()
+		p.parseStmt()
 	}
 	return nil
 }
@@ -52,7 +52,7 @@ func stripString(s string) string {
 	return s[1 : len(s)-1]
 }
 
-func (p *parser) parseBlock() {
+func (p *parser) parseStmt() {
 	switch {
 	case p.accept(isDef):
 		var n node
