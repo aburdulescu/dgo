@@ -2,8 +2,8 @@ Diagram = { Stmt }
 
 Stmt = DefStmt | MsgStmt | RspStmt | LoopStmt | AltStmt
 
-DefStmt = "def" identifier string
-MsgStmt = "msg" identifier identifier string
-RspStmt = "rsp" identifier identifier string
+DefStmt = "def" identifier "=" string
+MsgStmt = "msg" identifier "->" identifier "=" string
+RspStmt = "rsp" identifier "->" identifier "=" string
 LoopStmt = "loop" string { Stmt } "end"
 AltStmt = "alt" string { Stmt } [ "else" { Stmt } ] "end"
