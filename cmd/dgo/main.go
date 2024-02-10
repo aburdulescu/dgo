@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -9,17 +10,51 @@ import (
 )
 
 func main() {
-	a, err := dgo.Parse(os.Stdin)
-	if err != nil {
-		panic(err)
+	if err := mainErr(); err != nil {
+		fmt.Fprintln(os.Stderr, "error:", err)
+		os.Exit(1)
+	}
+}
+
+func mainErr() error {
+	flag.Usage = func() {
+		fmt.Fprint(os.Stderr, `Usage: dgo <command>
+
+Commands:
+    fmt  Format the code read from stdin
+    ast  Dump the AST for the code read from stdin
+
+`)
+	}
+	flag.Parse()
+
+	if flag.NArg() == 0 {
+		flag.Usage()
+		return nil
 	}
 
+	a, err := dgo.Parse(os.Stdin)
+	if err != nil {
+		return err
+	}
+
+	switch cmd := flag.Arg(0); cmd {
+	case "fmt":
+		format(a)
+	case "ast":
+		a.Dump()
+	default:
+		return fmt.Errorf("unknown command '%s'", cmd)
+	}
+
+	return nil
+}
+
+func format(a *dgo.AstNode) {
 	// TODO: move to fmt pkg/cmd
 	// TODO: preserve newlines and comment
 	// TODO: preserve raw strings
-
 	indent := 0
-
 	dgo.AstWalk(a, func(n *dgo.AstNode) {
 		if n.Kind == dgo.AstNodeRoot {
 			return
