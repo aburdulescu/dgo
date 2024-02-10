@@ -22,8 +22,9 @@ else
   msg u -> a = "bye"
 end
 
+// unformatted code
 alt "foo"
 loop "text"
-msg u -> a = "hi"
+msg u->a = "hi"
 end
 end
