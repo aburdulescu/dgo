@@ -168,7 +168,7 @@ func (p *parser) parseStmt() {
 
 	case p.accept(isElse):
 		if p.ast.Kind != AstNodeAlt {
-			// error
+			// TODO: return error
 		}
 
 		n := &AstNode{
@@ -181,7 +181,7 @@ func (p *parser) parseStmt() {
 	case p.accept(isEnd):
 		if p.ast.Kind != AstNodeElse &&
 			p.ast.Kind != AstNodeLoop {
-			// error
+			// TODO: return error
 		}
 
 		n := &AstNode{
@@ -239,6 +239,7 @@ func (p *parser) expect(filter func(string) bool) bool {
 }
 
 func (p *parser) error(msg string) {
+	// TODO: better errors
 	tok := p.token()
 	p.err = fmt.Errorf("line %d, column %d, text %q: %s", tok.line, tok.column, tok.text, msg)
 }
