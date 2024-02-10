@@ -1,17 +1,44 @@
 package dgo
 
-type AST struct {
-	stmts []any
+import (
+	"fmt"
+	"strings"
+)
+
+type astNode struct {
+	kind     astNodeKind
+	data     any
+	parent   *astNode
+	children []*astNode
 }
 
-type loopStmt struct {
-	stmts []any
+func (n astNode) String() string {
+	s := new(strings.Builder)
+	fmt.Fprintf(s, "%s:", n.kind)
+	for _, c := range n.children {
+		fmt.Fprintf(s, " %s", c.kind)
+	}
+	return s.String()
 }
 
-type altStmt struct {
-	stmts     []any
-	stmtsElse []any
+func (n *astNode) add(c *astNode) {
+	n.children = append(n.children, c)
 }
+
+//go:generate stringer -type astNodeKind
+type astNodeKind uint8
+
+const (
+	astNodeUndefined astNodeKind = iota
+	astNodeRoot
+	astNodeDef
+	astNodeMsg
+	astNodeRsp
+	astNodeLoop
+	astNodeAlt
+	astNodeElse
+	astNodeEnd
+)
 
 type defStmt struct {
 	identifier string

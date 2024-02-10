@@ -8,19 +8,26 @@ import (
 )
 
 type parser struct {
-	t    []token
-	i    int
-	last token
-	err  error
-	d    Diagram
+	t          []token
+	i          int
+	last       token
+	err        error
+	d          Diagram
+	astRoot    *astNode
+	astCurrent *astNode
 }
 
-func Parse(r io.Reader) (*Diagram, error) {
-	p := parser{t: scan(r)}
-	if err := p.parse(); err != nil {
-		return nil, err
+func Parse(r io.Reader) (*Diagram, *astNode, error) {
+	root := &astNode{kind: astNodeRoot}
+	p := parser{
+		t:          scan(r),
+		astRoot:    root,
+		astCurrent: root,
 	}
-	return &p.d, nil
+	if err := p.parse(); err != nil {
+		return nil, nil, err
+	}
+	return &p.d, p.astRoot, nil
 }
 
 func (p *parser) parse() error {
@@ -67,6 +74,14 @@ func (p *parser) parseStmt() {
 
 		p.d.addNode(n)
 
+		p.astCurrent.add(&astNode{
+			kind: astNodeDef,
+			data: defStmt{
+				identifier: n.identifier,
+				label:      n.label,
+			},
+		})
+
 	case p.accept(isMsg):
 		e := edge{}
 
@@ -93,6 +108,15 @@ func (p *parser) parseStmt() {
 		e.label = stripString(p.last.text)
 
 		p.d.addMsg(e)
+
+		p.astCurrent.add(&astNode{
+			kind: astNodeMsg,
+			data: msgStmt{
+				srcIdentifier: p.d.nodes[e.src].identifier,
+				dstIdentifier: p.d.nodes[e.dst].identifier,
+				label:         e.label,
+			},
+		})
 
 	case p.accept(isRsp):
 		e := edge{}
@@ -121,19 +145,59 @@ func (p *parser) parseStmt() {
 
 		p.d.addRsp(e)
 
+		p.astCurrent.add(&astNode{
+			kind: astNodeRsp,
+			data: rspStmt{
+				srcIdentifier: p.d.nodes[e.src].identifier,
+				dstIdentifier: p.d.nodes[e.dst].identifier,
+				label:         e.label,
+			},
+		})
+
 	case p.accept(isAlt):
 		p.expect(isString)
-		// TODO: add to diagram
+
+		n := &astNode{
+			kind:   astNodeAlt,
+			parent: p.astCurrent,
+		}
+		n.parent.add(n)
+		p.astCurrent = n
 
 	case p.accept(isElse):
-		// TODO: add to diagram
+		if p.astCurrent.kind != astNodeAlt {
+			// error
+		}
+
+		n := &astNode{
+			kind:   astNodeElse,
+			parent: p.astCurrent.parent,
+		}
+		n.parent.add(n)
+		p.astCurrent = n
 
 	case p.accept(isEnd):
-		// TODO: add to diagram
+		if p.astCurrent.kind != astNodeElse &&
+			p.astCurrent.kind != astNodeLoop {
+			// error
+		}
+
+		n := &astNode{
+			kind:   astNodeEnd,
+			parent: p.astCurrent.parent,
+		}
+		n.parent.add(n)
+		p.astCurrent = n.parent
 
 	case p.accept(isLoop):
 		p.expect(isString)
-		// TODO: add to diagram
+
+		n := &astNode{
+			kind:   astNodeLoop,
+			parent: p.astCurrent,
+		}
+		n.parent.add(n)
+		p.astCurrent = n
 
 	default:
 		p.error("unexpected keyword")
