@@ -22,6 +22,8 @@ else
   msg u -> a = "bye"
 end
 
+alt "foo"
 loop "text"
-  msg u -> a = "hi"
+msg u -> a = "hi"
+end
 end

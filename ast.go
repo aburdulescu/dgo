@@ -2,57 +2,66 @@ package dgo
 
 import (
 	"fmt"
-	"strings"
 )
 
-type astNode struct {
-	kind     astNodeKind
-	data     any
-	parent   *astNode
-	children []*astNode
+type AstNode struct {
+	Kind     AstNodeKind
+	Data     any
+	parent   *AstNode
+	children []*AstNode
 }
 
-func (n astNode) String() string {
-	s := new(strings.Builder)
-	fmt.Fprintf(s, "%s:", n.kind)
+func AstWalk(n *AstNode, fn func(*AstNode)) {
+	fn(n)
 	for _, c := range n.children {
-		fmt.Fprintf(s, " %s", c.kind)
+		AstWalk(c, fn)
 	}
-	return s.String()
 }
 
-func (n *astNode) add(c *astNode) {
+func (n AstNode) String() string {
+	return fmt.Sprintf("%s", n.Kind)
+}
+
+func (n *AstNode) add(c *AstNode) {
 	n.children = append(n.children, c)
 }
 
-//go:generate stringer -type astNodeKind
-type astNodeKind uint8
+//go:generate stringer -type AstNodeKind
+type AstNodeKind uint8
 
 const (
-	astNodeUndefined astNodeKind = iota
-	astNodeRoot
-	astNodeDef
-	astNodeMsg
-	astNodeRsp
-	astNodeLoop
-	astNodeAlt
-	astNodeElse
-	astNodeEnd
+	AstNodeUndefined AstNodeKind = iota
+	AstNodeRoot
+	AstNodeDef
+	AstNodeMsg
+	AstNodeRsp
+	AstNodeLoop
+	AstNodeAlt
+	AstNodeElse
+	AstNodeEnd
 )
 
-type defStmt struct {
-	identifier string
-	label      string
+type DefStmt struct {
+	Identifier string
+	Label      string
 }
 
-type msgStmt struct {
-	srcIdentifier string
-	dstIdentifier string
-	label         string
+type MsgStmt struct {
+	Src   string
+	Dst   string
+	Label string
 }
 
-type rspStmt struct {
-	srcIdentifier string
-	dstIdentifier string
-	label         string
+type RspStmt struct {
+	Src   string
+	Dst   string
+	Label string
+}
+
+type AltStmt struct {
+	Text string
+}
+
+type LoopStmt struct {
+	Text string
 }

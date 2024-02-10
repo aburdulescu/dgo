@@ -8,26 +8,37 @@ import (
 )
 
 type parser struct {
-	t          []token
-	i          int
-	last       token
-	err        error
-	d          Diagram
-	astRoot    *astNode
-	astCurrent *astNode
+	t            []token
+	i            int
+	last         token
+	err          error
+	participants []string
+	ast          *AstNode
 }
 
-func Parse(r io.Reader) (*Diagram, *astNode, error) {
-	root := &astNode{kind: astNodeRoot}
+func (p *parser) addParticipant(id string) {
+	p.participants = append(p.participants, id)
+}
+
+func (p parser) findParticipant(id string) int {
+	for i, v := range p.participants {
+		if v == id {
+			return i
+		}
+	}
+	return -1
+}
+
+func Parse(r io.Reader) (*AstNode, error) {
+	root := &AstNode{Kind: AstNodeRoot}
 	p := parser{
-		t:          scan(r),
-		astRoot:    root,
-		astCurrent: root,
+		t:   scan(r),
+		ast: root,
 	}
 	if err := p.parse(); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	return &p.d, p.astRoot, nil
+	return root, nil
 }
 
 func (p *parser) parse() error {
@@ -62,142 +73,137 @@ func stripString(s string) string {
 func (p *parser) parseStmt() {
 	switch {
 	case p.accept(isDef):
-		var n node
+		var d DefStmt
 
 		p.expect(isIdentifier)
-		n.identifier = p.last.text
+		d.Identifier = p.last.text
 
 		p.expect(isEqual)
 
 		p.expect(isString)
-		n.label = stripString(p.last.text)
+		d.Label = stripString(p.last.text)
 
-		p.d.addNode(n)
+		p.addParticipant(d.Identifier)
 
-		p.astCurrent.add(&astNode{
-			kind: astNodeDef,
-			data: defStmt{
-				identifier: n.identifier,
-				label:      n.label,
-			},
+		p.ast.add(&AstNode{
+			Kind:   AstNodeDef,
+			Data:   d,
+			parent: p.ast,
 		})
 
 	case p.accept(isMsg):
-		e := edge{}
+		var d MsgStmt
 
 		p.expect(isIdentifier)
-		e.src = p.d.find(p.last.text)
-		if e.src == -1 {
+		if i := p.findParticipant(p.last.text); i == -1 {
 			p.error(fmt.Sprintf("unknown identifier '%s'", p.last.text))
 			return
 		}
+		d.Src = p.last.text
 
 		p.expect(isDash)
 		p.expect(isLess)
 
 		p.expect(isIdentifier)
-		e.dst = p.d.find(p.last.text)
-		if e.dst == -1 {
+		if i := p.findParticipant(p.last.text); i == -1 {
 			p.error(fmt.Sprintf("unknown identifier '%s'", p.last.text))
 			return
 		}
+		d.Dst = p.last.text
 
 		p.expect(isEqual)
 
 		p.expect(isString)
-		e.label = stripString(p.last.text)
+		d.Label = stripString(p.last.text)
 
-		p.d.addMsg(e)
-
-		p.astCurrent.add(&astNode{
-			kind: astNodeMsg,
-			data: msgStmt{
-				srcIdentifier: p.d.nodes[e.src].identifier,
-				dstIdentifier: p.d.nodes[e.dst].identifier,
-				label:         e.label,
-			},
+		p.ast.add(&AstNode{
+			Kind:   AstNodeMsg,
+			Data:   d,
+			parent: p.ast,
 		})
 
 	case p.accept(isRsp):
-		e := edge{}
+		var d RspStmt
 
 		p.expect(isIdentifier)
-		e.src = p.d.find(p.last.text)
-		if e.src == -1 {
+		if i := p.findParticipant(p.last.text); i == -1 {
 			p.error(fmt.Sprintf("unknown identifier '%s'", p.last.text))
 			return
 		}
+		d.Src = p.last.text
 
 		p.expect(isDash)
 		p.expect(isLess)
 
 		p.expect(isIdentifier)
-		e.dst = p.d.find(p.last.text)
-		if e.dst == -1 {
+		if i := p.findParticipant(p.last.text); i == -1 {
 			p.error(fmt.Sprintf("unknown identifier '%s'", p.last.text))
 			return
 		}
+		d.Dst = p.last.text
 
 		p.expect(isEqual)
 
 		p.expect(isString)
-		e.label = stripString(p.last.text)
+		d.Label = stripString(p.last.text)
 
-		p.d.addRsp(e)
-
-		p.astCurrent.add(&astNode{
-			kind: astNodeRsp,
-			data: rspStmt{
-				srcIdentifier: p.d.nodes[e.src].identifier,
-				dstIdentifier: p.d.nodes[e.dst].identifier,
-				label:         e.label,
-			},
+		p.ast.add(&AstNode{
+			Kind:   AstNodeRsp,
+			Data:   d,
+			parent: p.ast,
 		})
 
 	case p.accept(isAlt):
+		var d AltStmt
 		p.expect(isString)
+		d.Text = stripString(p.last.text)
 
-		n := &astNode{
-			kind:   astNodeAlt,
-			parent: p.astCurrent,
+		n := &AstNode{
+			Kind:   AstNodeAlt,
+			Data:   d,
+			parent: p.ast,
 		}
 		n.parent.add(n)
-		p.astCurrent = n
+		p.ast = n
 
 	case p.accept(isElse):
-		if p.astCurrent.kind != astNodeAlt {
+		if p.ast.Kind != AstNodeAlt {
 			// error
 		}
 
-		n := &astNode{
-			kind:   astNodeElse,
-			parent: p.astCurrent.parent,
+		n := &AstNode{
+			Kind:   AstNodeElse,
+			parent: p.ast.parent,
 		}
 		n.parent.add(n)
-		p.astCurrent = n
+		p.ast = n
 
 	case p.accept(isEnd):
-		if p.astCurrent.kind != astNodeElse &&
-			p.astCurrent.kind != astNodeLoop {
+		if p.ast.Kind != AstNodeElse &&
+			p.ast.Kind != AstNodeLoop {
 			// error
 		}
 
-		n := &astNode{
-			kind:   astNodeEnd,
-			parent: p.astCurrent.parent,
+		n := &AstNode{
+			Kind:   AstNodeEnd,
+			parent: p.ast.parent,
 		}
 		n.parent.add(n)
-		p.astCurrent = n.parent
+		p.ast = n.parent
 
 	case p.accept(isLoop):
-		p.expect(isString)
+		var d LoopStmt
 
-		n := &astNode{
-			kind:   astNodeLoop,
-			parent: p.astCurrent,
+		p.expect(isString)
+		d.Text = stripString(p.last.text)
+
+		n := &AstNode{
+			Kind:   AstNodeLoop,
+			Data:   d,
+			parent: p.ast,
 		}
 		n.parent.add(n)
-		p.astCurrent = n
+		p.ast = n
 
 	default:
 		p.error("unexpected keyword")
