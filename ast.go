@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// TODO: store nodes in a list not a tree
 type AstNode struct {
 	Kind     AstNodeKind
 	Data     any

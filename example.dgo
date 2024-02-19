@@ -1,3 +1,5 @@
+// TODO: remove sugar, ex: def a "Alice", msg a b "hello" etc.
+
 // define object
 def u = "User"
 def a = "Alice"
