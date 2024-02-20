@@ -33,16 +33,16 @@ Commands:
 		return nil
 	}
 
-	a, err := dgo.Parse(os.Stdin)
+	ast, err := dgo.Parse(os.Stdin)
 	if err != nil {
 		return err
 	}
 
 	switch cmd := flag.Arg(0); cmd {
 	case "fmt":
-		format(a)
+		format(ast)
 	case "ast":
-		a.Dump()
+		ast.Dump()
 	default:
 		return fmt.Errorf("unknown command '%s'", cmd)
 	}
@@ -50,16 +50,12 @@ Commands:
 	return nil
 }
 
-func format(a *dgo.AstNode) {
+func format(ast *dgo.Ast) {
 	// TODO: move to fmt pkg/cmd
 	// TODO: preserve newlines and comment
 	// TODO: preserve raw strings
 	indent := 0
-	dgo.AstWalk(a, func(n *dgo.AstNode) {
-		if n.Kind == dgo.AstNodeRoot {
-			return
-		}
-
+	ast.Walk(func(n dgo.AstNode) {
 		switch n.Kind {
 		case dgo.AstNodeElse, dgo.AstNodeEnd:
 			indent -= 2

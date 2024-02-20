@@ -9,19 +9,18 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[AstNodeUndefined-0]
-	_ = x[AstNodeRoot-1]
-	_ = x[AstNodeDef-2]
-	_ = x[AstNodeMsg-3]
-	_ = x[AstNodeRsp-4]
-	_ = x[AstNodeLoop-5]
-	_ = x[AstNodeAlt-6]
-	_ = x[AstNodeElse-7]
-	_ = x[AstNodeEnd-8]
+	_ = x[AstNodeDef-1]
+	_ = x[AstNodeMsg-2]
+	_ = x[AstNodeRsp-3]
+	_ = x[AstNodeLoop-4]
+	_ = x[AstNodeAlt-5]
+	_ = x[AstNodeElse-6]
+	_ = x[AstNodeEnd-7]
 }
 
-const _AstNodeKind_name = "UndefinedRootDefMsgRspLoopAltElseEnd"
+const _AstNodeKind_name = "UndefinedDefMsgRspLoopAltElseEnd"
 
-var _AstNodeKind_index = [...]uint8{0, 9, 13, 16, 19, 22, 26, 29, 33, 36}
+var _AstNodeKind_index = [...]uint8{0, 9, 12, 15, 18, 22, 25, 29, 32}
 
 func (i AstNodeKind) String() string {
 	if i >= AstNodeKind(len(_AstNodeKind_index)-1) {

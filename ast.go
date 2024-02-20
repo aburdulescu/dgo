@@ -5,66 +5,66 @@ import (
 	"strings"
 )
 
-// TODO: store nodes in a list not a tree
-type AstNode struct {
-	Kind     AstNodeKind
-	Data     any
-	parent   *AstNode
-	children []*AstNode
+type Ast struct {
+	nodes []AstNode
 }
 
-func AstWalk(n *AstNode, fn func(*AstNode)) {
-	fn(n)
-	for _, c := range n.children {
-		AstWalk(c, fn)
+type AstNode struct {
+	Kind AstNodeKind
+	Data any
+}
+
+func (ast Ast) Walk(fn func(AstNode)) {
+	for _, n := range ast.nodes {
+		fn(n)
 	}
 }
 
-func (n AstNode) Dump() {
+func (ast Ast) Dump() {
 	level := 1
-	AstWalk(&n, func(v *AstNode) {
-		if v.Kind == AstNodeRoot {
-			return
-		}
-
-		switch v.Kind {
+	for _, node := range ast.nodes {
+		switch node.Kind {
 		case AstNodeElse, AstNodeEnd:
 			level--
 		}
 
-		fmt.Printf("%s%s", strings.Repeat("-", level), v.Kind)
-		switch v.Kind {
+		fmt.Printf("%s%s", strings.Repeat("-", level), node.Kind)
+		switch node.Kind {
 		case AstNodeDef:
-			d := v.Data.(DefStmt)
+			d := node.Data.(DefStmt)
 			fmt.Printf(" %s %q", d.Identifier, d.Label)
 		case AstNodeMsg:
-			d := v.Data.(MsgStmt)
+			d := node.Data.(MsgStmt)
 			fmt.Printf(" %s %s %q", d.Src, d.Dst, d.Label)
 		case AstNodeRsp:
-			d := v.Data.(RspStmt)
+			d := node.Data.(RspStmt)
 			fmt.Printf(" %s %s %q", d.Src, d.Dst, d.Label)
 		case AstNodeAlt:
-			d := v.Data.(AltStmt)
+			d := node.Data.(AltStmt)
 			fmt.Printf(" %q", d.Text)
 		case AstNodeLoop:
-			d := v.Data.(LoopStmt)
+			d := node.Data.(LoopStmt)
 			fmt.Printf(" %q", d.Text)
 		}
 		fmt.Print("\n")
 
-		switch v.Kind {
-		case AstNodeRoot, AstNodeLoop, AstNodeAlt, AstNodeElse:
+		switch node.Kind {
+		case AstNodeLoop, AstNodeAlt, AstNodeElse:
 			level++
 		}
-	})
+	}
 }
 
 func (n AstNode) String() string {
 	return fmt.Sprintf("%s", n.Kind)
 }
 
-func (n *AstNode) add(c *AstNode) {
-	n.children = append(n.children, c)
+func (ast *Ast) add(node AstNode) {
+	ast.nodes = append(ast.nodes, node)
+}
+
+func (ast Ast) last() AstNode {
+	return ast.nodes[len(ast.nodes)-1]
 }
 
 //go:generate stringer -type=AstNodeKind -trimprefix=AstNode
@@ -72,7 +72,6 @@ type AstNodeKind uint8
 
 const (
 	AstNodeUndefined AstNodeKind = iota
-	AstNodeRoot
 	AstNodeDef
 	AstNodeMsg
 	AstNodeRsp

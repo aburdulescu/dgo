@@ -13,7 +13,7 @@ type parser struct {
 	last         token
 	err          error
 	participants []string
-	ast          *AstNode
+	ast          Ast
 }
 
 func (p *parser) addParticipant(id string) {
@@ -29,16 +29,14 @@ func (p parser) findParticipant(id string) int {
 	return -1
 }
 
-func Parse(r io.Reader) (*AstNode, error) {
-	root := &AstNode{Kind: AstNodeRoot}
+func Parse(r io.Reader) (*Ast, error) {
 	p := parser{
-		t:   scan(r),
-		ast: root,
+		t: scan(r),
 	}
 	if err := p.parse(); err != nil {
 		return nil, err
 	}
-	return root, nil
+	return &p.ast, nil
 }
 
 func (p *parser) parse() error {
@@ -85,10 +83,9 @@ func (p *parser) parseStmt() {
 
 		p.addParticipant(d.Identifier)
 
-		p.ast.add(&AstNode{
-			Kind:   AstNodeDef,
-			Data:   d,
-			parent: p.ast,
+		p.ast.add(AstNode{
+			Kind: AstNodeDef,
+			Data: d,
 		})
 
 	case p.accept(isMsg):
@@ -116,10 +113,9 @@ func (p *parser) parseStmt() {
 		p.expect(isString)
 		d.Label = stripString(p.last.text)
 
-		p.ast.add(&AstNode{
-			Kind:   AstNodeMsg,
-			Data:   d,
-			parent: p.ast,
+		p.ast.add(AstNode{
+			Kind: AstNodeMsg,
+			Data: d,
 		})
 
 	case p.accept(isRsp):
@@ -147,10 +143,9 @@ func (p *parser) parseStmt() {
 		p.expect(isString)
 		d.Label = stripString(p.last.text)
 
-		p.ast.add(&AstNode{
-			Kind:   AstNodeRsp,
-			Data:   d,
-			parent: p.ast,
+		p.ast.add(AstNode{
+			Kind: AstNodeRsp,
+			Data: d,
 		})
 
 	case p.accept(isAlt):
@@ -158,38 +153,29 @@ func (p *parser) parseStmt() {
 		p.expect(isString)
 		d.Text = stripString(p.last.text)
 
-		n := &AstNode{
-			Kind:   AstNodeAlt,
-			Data:   d,
-			parent: p.ast,
-		}
-		n.parent.add(n)
-		p.ast = n
+		p.ast.add(AstNode{
+			Kind: AstNodeAlt,
+			Data: d,
+		})
 
 	case p.accept(isElse):
-		if p.ast.Kind != AstNodeAlt {
+		if p.ast.last().Kind != AstNodeAlt {
 			// TODO: return error
 		}
 
-		n := &AstNode{
-			Kind:   AstNodeElse,
-			parent: p.ast.parent,
-		}
-		n.parent.add(n)
-		p.ast = n
+		p.ast.add(AstNode{
+			Kind: AstNodeElse,
+		})
 
 	case p.accept(isEnd):
-		if p.ast.Kind != AstNodeElse &&
-			p.ast.Kind != AstNodeLoop {
+		if node := p.ast.last(); node.Kind != AstNodeElse &&
+			node.Kind != AstNodeLoop {
 			// TODO: return error
 		}
 
-		n := &AstNode{
-			Kind:   AstNodeEnd,
-			parent: p.ast.parent,
-		}
-		n.parent.add(n)
-		p.ast = n.parent
+		p.ast.add(AstNode{
+			Kind: AstNodeEnd,
+		})
 
 	case p.accept(isLoop):
 		var d LoopStmt
@@ -197,13 +183,10 @@ func (p *parser) parseStmt() {
 		p.expect(isString)
 		d.Text = stripString(p.last.text)
 
-		n := &AstNode{
-			Kind:   AstNodeLoop,
-			Data:   d,
-			parent: p.ast,
-		}
-		n.parent.add(n)
-		p.ast = n
+		p.ast.add(AstNode{
+			Kind: AstNodeLoop,
+			Data: d,
+		})
 
 	default:
 		p.error("unexpected keyword")
