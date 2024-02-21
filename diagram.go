@@ -37,6 +37,35 @@ func (d *Diagram) find(id string) int {
 	return -1
 }
 
+func NewDiagram(ast *Ast) *Diagram {
+	d := new(Diagram)
+	ast.Walk(func(n AstNode) {
+		switch n.Kind {
+		case AstNodeDef:
+			d.addNode(node{
+				identifier: n.Data.(DefStmt).Identifier,
+				label:      n.Data.(DefStmt).Label,
+			})
+
+		case AstNodeMsg:
+			d.addMsg(edge{
+				src:   d.find(n.Data.(MsgStmt).Src),
+				dst:   d.find(n.Data.(MsgStmt).Dst),
+				label: n.Data.(MsgStmt).Label,
+			})
+
+		case AstNodeRsp:
+			d.addRsp(edge{
+				src:   d.find(n.Data.(RspStmt).Src),
+				dst:   d.find(n.Data.(RspStmt).Dst),
+				label: n.Data.(RspStmt).Label,
+			})
+
+		}
+	})
+	return d
+}
+
 func (d Diagram) Generate() string {
 	// TODO: generate SVG
 	return ""
